@@ -12,6 +12,38 @@ public class BinaryTree<T extends Comparable<T>>
 
 
 	/**
+	 * Method to search through the binary tree for the data parameter
+	 * @param start = where we are currently in the tree
+	 * @param data = data to find in the tree
+	 * @return
+	 * 				= true if the element is found
+	 * 				= false otherwise
+	 */
+	private boolean search (Node<T> start, T data)
+	{
+		Node<T> current = start;
+
+		if (current == null)
+			return false;
+
+		// found?
+		if (current.data.compareTo(data) == 0)	
+			return true;
+
+		// current data larger than data?
+		else if (current.data.compareTo(data) > 0)
+			return search(current.lLink, data);
+
+		// current data smaller than data?
+		else if (current.data.compareTo(data) < 0)
+			return search(current.rLink, data);
+
+
+
+		return false;
+	}
+
+	/**
 	 * Method to print the tree in the preOrder traversal fashion
 	 * (root, left, right) ex. 6, 4, 2, 5, 8, 7, 12
 	 */
@@ -60,7 +92,6 @@ public class BinaryTree<T extends Comparable<T>>
 	 * Method to print the tree by level 
 	 * (level1, level2, ..., level height) ex. 6, 4, 8, 2, 5, 7, 12, 1
 	 * @param start = node to start at
-	 * @param level = level 
 	 */
 	private void levelOrderTraversal(Node<T> start)
 	{
@@ -73,6 +104,7 @@ public class BinaryTree<T extends Comparable<T>>
 			System.out.print(start + " ");
 		}
 
+			
 		ArrayList<Node<T>> LRNodes = new ArrayList<Node<T>>();
 		Node<T> current = start;
 
@@ -82,9 +114,11 @@ public class BinaryTree<T extends Comparable<T>>
 			if (i == 0)
 				LRNodes.addAll(printLR(current));
 
-			LRNodes.addAll(printLR(LRNodes.get(0)));
+			if (LRNodes.get(0) != null)
+				LRNodes.addAll(printLR(LRNodes.get(0)));
 
-			LRNodes.addAll(printLR(LRNodes.get(1)));
+			if (LRNodes.get(1) != null)
+				LRNodes.addAll(printLR(LRNodes.get(1)));
 
 			// get rid of what we just printed
 			LRNodes.remove(0);
@@ -122,6 +156,9 @@ public class BinaryTree<T extends Comparable<T>>
 	 */
 	private ArrayList<Node<T>> printLR(Node<T> node)
 	{
+		if (node == null)
+			return null;
+		
 		ArrayList<Node<T>> leaves = new ArrayList<Node<T>>();
 
 		if (node.lLink != null)
@@ -169,6 +206,7 @@ public class BinaryTree<T extends Comparable<T>>
 		return numLeaves;
 
 	}
+
 
 	/**
 	 * Method to determine the number of nodes in a binary tree
@@ -314,10 +352,77 @@ public class BinaryTree<T extends Comparable<T>>
 		}
 	}
 
+
+	/**
+	 * Delete the data parameter in the binary tree if the data exists
+	 * @param previous = last node in the tree that has been visited
+	 * @param current = the current node being visited
+	 * @param data = data to be deleted
+	 */
+	private void delete(Node<T> previous, Node<T> current, T data)
+	{
+		// tree is empty or node is null
+		if (root == null || current == null)
+			return;
+
+		// found it
+		if (current.data.compareTo(data) == 0)
+		{
+			// restructure the tree
+			while (current.lLink != null || current.rLink != null)
+			{
+				// restructure the left side
+				if (current.lLink != null)
+				{
+					T temp = current.data;
+					current.data = current.lLink.data;
+					current.lLink.data = temp;
+					previous = current;
+					current = current.lLink;
+				}
+
+				// restructure the right side
+				else if (current.rLink != null)
+				{
+					T temp = current.data;
+					current.data = current.rLink.data;
+					current.rLink.data = temp;
+					previous = current;
+					current = current.rLink;
+				}
+				
+			}
+
+			// perform the deletion if the data to be deleted is a right child
+			if (previous.rLink != null)
+			{
+				if (previous.rLink.data.compareTo(data) == 0)
+					previous.rLink = null;
+			}
+
+			// perform the deletion if the data to be deleted is a left child
+			if (previous.lLink != null)
+			{
+				if (previous.lLink.data.compareTo(data) == 0)
+					previous.lLink = null;
+			}
+			
+		}
+
+		// DIDN'T FIND IT
+		
+		// current data is greater than data to delete
+			delete(current, current.lLink, data);
+
+		// current data is less than data to delete
+			delete(current, current.rLink, data);
+
+	}
+
 	/**
 	 * Constructor for binary tree to be created with
 	 * a root node
-	 * @param _root
+	 * @param _root = root of the binary tree
 	 */
 	private void BinaryTree(Node<T> _root)
 	{
@@ -332,6 +437,7 @@ public class BinaryTree<T extends Comparable<T>>
 	{
 		root = null;
 	}
+
 
 	public static void main(String[] args) 
 	{
@@ -387,6 +493,41 @@ public class BinaryTree<T extends Comparable<T>>
 		System.out.printf("\n\n\n There are %d nodes in the binary tree.", bt.nodesCount(bt.root));
 
 		System.out.printf("\n\n\n There are %d leaves in the binary tree.", bt.leavesCount(bt.root));
+
+		System.out.println("\n\n\n 12 is in the binary tree.   ");
+		System.out.print(bt.search(bt.root, 12));
+
+		System.out.println("\n\n\n 34 is in the binary tree.   ");
+		System.out.print(bt.search(bt.root, 34));
+
+
+		bt.delete(bt.root, bt.root, 6);
+
+		System.out.println("\n\nAfter Deleting 6 \nPreorder Traversal --------------------");
+		bt.preOrderTraversal(bt.root);
+
+		System.out.println("\n\n\n Postorder Traversal --------------------");
+		bt.postOrderTraversal(bt.root);
+
+		System.out.println("\n\n\n Inorder Traversal --------------------");
+		bt.inOrderTraversal(bt.root);
+
+		System.out.println("\n\n\n Level Order Traversal --------------------");
+		bt.levelOrderTraversal(bt.root);
+
+		bt.delete(bt.root,  bt.root, 5);
+		
+		System.out.println("\n\n\n After Deleting 5 \nPreorder Traversal --------------------");
+		bt.preOrderTraversal(bt.root);
+
+		System.out.println("\n\n\n Postorder Traversal --------------------");
+		bt.postOrderTraversal(bt.root);
+
+		System.out.println("\n\n\n Inorder Traversal --------------------");
+		bt.inOrderTraversal(bt.root);
+
+		System.out.println("\n\n\n Level Order Traversal --------------------");
+		bt.levelOrderTraversal(bt.root);
 	}
 
 }
